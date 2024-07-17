@@ -262,7 +262,7 @@ function Navbar() {
             h="30px"
             position="fixed"
             top="calc(99.5vh - 540px)"
-            left="0px"
+            right="10px"
             zIndex={4}
             onClick={() => {
               setShowChat(false);
