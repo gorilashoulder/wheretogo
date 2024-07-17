@@ -16,6 +16,7 @@ import {
   Spacer,
   StackDivider,
   Text,
+  Tooltip,
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
@@ -185,7 +186,7 @@ function PostList() {
           </MenuList>
         </Menu>
         {account.isAdmin() ||
-          (account.isCertifyUser() && (
+          (account.isCertifyUser() ? (
             <Button
               onClick={() => navigate(`/post/write`)}
               ml={{ base: "8px", lg: "1rem", sm: "8px" }}
@@ -193,6 +194,16 @@ function PostList() {
             >
               글쓰기
             </Button>
+          ) : (
+            <Tooltip label={"프로필에서 이메일 인증 후 가능합니다."}>
+              <Button
+                onClick={() => navigate(`/memberinfo`)}
+                ml={{ base: "8px", lg: "1rem", sm: "8px" }}
+                color={"black.alpha.900"}
+              >
+                글쓰기
+              </Button>
+            </Tooltip>
           ))}
       </Flex>
       {/* 회원 게시글 페이지 */}

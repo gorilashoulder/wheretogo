@@ -7,6 +7,7 @@ import {
   GridItem,
   Image,
   Text,
+  Tooltip,
   useColorMode,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -242,16 +243,30 @@ function Navbar() {
           borderRadius={"1rem"}
           align={"center"}
         >
-          <FontAwesomeIcon icon={faMessage} color={navColor} size={"xl"} />
-          {newMessage ? (
-            <Center>
-              <Text>새로온 메세지</Text>
-            </Center>
-          ) : (
-            <Center fontSize={"1rem"} ml={1}>
-              <Text>1:1 문의</Text>
-            </Center>
-          )}
+          <Tooltip
+            label={
+              !account.isLoggedIn()
+                ? "로그인 후 사용 가능합니다"
+                : newMessage
+                  ? "새로운 메시지가 있습니다"
+                  : "1:1 문의하기"
+            }
+            placement="top"
+            hasArrow
+          >
+            <Box display="flex" alignItems="center">
+              <FontAwesomeIcon icon={faMessage} color={navColor} size="xl" />
+              {newMessage ? (
+                <Center ml={1}>
+                  <Text fontSize="1rem">새로운 메시지</Text>
+                </Center>
+              ) : (
+                <Center fontSize="1rem" ml={1}>
+                  <Text>1:1 문의</Text>
+                </Center>
+              )}
+            </Box>
+          </Tooltip>
         </Flex>
       )}
       {showChat && (

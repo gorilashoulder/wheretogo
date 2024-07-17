@@ -14,20 +14,20 @@ cp -r ../frontend/src/assets/* src/main/resources/static/src/assets/
 ./gradlew bootJar
 
 # build image
-docker build -t kooreung/wheretogo .
+docker buildx build --platform=linux/amd64 -t simsunghwan/wheretogo .
 
 # push image
-docker push kooreung/wheretogo
+docker push simsunghwan/wheretogo
 
 # remote 에서
 
 # 컨테이너 멈추고
-ssh -i src/main/resources/secret/keykooreung.pem ubuntu@43.201.95.101 'docker stop wheretogo'
+ssh -i src/main/resources/secret/key0527.pem ubuntu@15.164.103.59 'docker stop wheretogo'
 # 컨테이너 삭제
-ssh -i src/main/resources/secret/keykooreung.pem ubuntu@43.201.95.101 'docker rm wheretogo'
+ssh -i src/main/resources/secret/key0527.pem ubuntu@15.164.103.59 'docker rm wheretogo'
 # pull image
-ssh -i src/main/resources/secret/keykooreung.pem ubuntu@43.201.95.101 'docker pull kooreung/wheretogo'
+ssh -i src/main/resources/secret/key0527.pem ubuntu@15.164.103.59 'docker pull simsunghwan/wheretogo'
 # 컨테이너 실행
-ssh -i src/main/resources/secret/keykooreung.pem ubuntu@43.201.95.101 'docker run -d -p 8080:8080 --restart always --name wheretogo kooreung/wheretogo'
+ssh -i src/main/resources/secret/key0527.pem ubuntu@15.164.103.59 'docker run -d -p 8080:8080 --restart always --name wheretogo simsunghwan/wheretogo'
 # 불필요한 이미지 삭제
-ssh -i src/main/resources/secret/keykooreung.pem ubuntu@43.201.95.101 'docker image prune -f'
+ssh -i src/main/resources/secret/key0527.pem ubuntu@15.164.103.59 'docker image prune -f'

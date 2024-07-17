@@ -62,17 +62,17 @@ public interface PostMapper {
                         LEFT JOIN comment c ON p.postid = c.postid
                         LEFT JOIN likes l ON p.postid = l.postid
                         LEFT JOIN place pl ON p.postid = pl.postid
-                        LEFT JOIN (
-                            SELECT r1.*
-                            FROM report r1
-                                     INNER JOIN (
-                                SELECT postid, MAX(reportid) AS max_reportid
-                                FROM report
-                                GROUP BY postid
-                        ) r2 ON r1.postid = r2.postid AND r1.reportid = r2.max_reportid
-                    ) r ON p.postid = r.postid
+                   LEFT JOIN (
+                       SELECT r1.*
+                       FROM report r1
+                       INNER JOIN (
+                           SELECT postid, MAX(reportid) AS max_reportid
+                           FROM report
+                           GROUP BY postid
+                       ) r2 ON r1.postid = r2.postid AND r1.reportid = r2.max_reportid
+                   ) r ON p.postid = r.postid
             <where>
-                a.authtype != 'admin'
+                a.authtype != 'admin' AND (r.processYn IS NULL OR r.processYn != 'P')
                 <if test="searchType != null">
                     <bind name="pattern" value="'%' + searchKeyword + '%'"/>
                     <bind name="region" value="'%' + searchReg + '%'"/>
@@ -125,8 +125,17 @@ public interface PostMapper {
             FROM post p JOIN member m ON p.memberid = m.memberid
                         JOIN authority a ON p.memberid = a.memberid
                         LEFT JOIN place pl ON p.postid = pl.postid
+                                      LEFT JOIN (
+                                          SELECT r1.*
+                                          FROM report r1
+                                          INNER JOIN (
+                                              SELECT postid, MAX(reportid) AS max_reportid
+                                              FROM report
+                                              GROUP BY postid
+                                          ) r2 ON r1.postid = r2.postid AND r1.reportid = r2.max_reportid
+                                      ) r ON p.postid = r.postid
                 <where>
-               a.authtype != 'admin'
+               a.authtype != 'admin' AND (r.processYn IS NULL OR r.processYn != 'P')
                        <if test="searchType != null">
                        <bind name="pattern" value="'%' + searchKeyword + '%'"/>
                        <bind name="region" value="'%' + searchReg + '%'"/>
@@ -161,35 +170,37 @@ public interface PostMapper {
 
     // 게시글 Top 3 인기글 목록 매퍼 감차
     @Select("""
-                 SELECT p.postid, p.title, p.content, p.view, p.createDate,
-                        m.nickName,
-                        (SELECT plpic.picurl
-                         FROM placepic plpic
-                         WHERE plpic.placeid = pl.placeid
-                         ORDER BY plpic.placeid ASC
-                         LIMIT 1) AS picurl,
-                        m.memberId,
-            r.processYn,
-                        COUNT(DISTINCT c.commentid) commentCount,
-                        COUNT(DISTINCT l.memberid) likeCount,
-                        ROW_NUMBER() OVER (ORDER BY likeCount DESC, p.view DESC, commentCount DESC) postOfBest
-                 FROM post p
-                          JOIN member m ON p.memberid = m.memberid
-                          LEFT JOIN comment c ON p.postid = c.postid
-                          LEFT JOIN likes l ON p.postid = l.postid
-                          LEFT JOIN place pl ON p.postid = pl.postid
-             LEFT JOIN (
-                   SELECT r1.*
-                   FROM report r1
-                            INNER JOIN (
-                       SELECT postid, MAX(reportid) AS max_reportid
-                       FROM report
-                       GROUP BY postid
-                   ) r2 ON r1.postid = r2.postid AND r1.reportid = r2.max_reportid
-               ) r ON p.postid = r.postid
-                 GROUP BY p.postid, p.title, p.view, m.nickName, p.content
-                 LIMIT 3
-               """)
+              SELECT p.postid, p.title, p.content, p.view, p.createDate,
+                     m.nickName,
+                     (SELECT plpic.picurl
+                      FROM placepic plpic
+                      WHERE plpic.placeid = pl.placeid
+                      ORDER BY plpic.placeid ASC
+                      LIMIT 1) AS picurl,
+                     m.memberId,
+                     r.processYn,
+                     COUNT(DISTINCT c.commentid) commentCount,
+                     COUNT(DISTINCT l.memberid) likeCount,
+                     ROW_NUMBER() OVER (ORDER BY likeCount DESC, p.view DESC, commentCount DESC) postOfBest
+              FROM post p
+              JOIN member m ON p.memberid = m.memberid
+              LEFT JOIN comment c ON p.postid = c.postid
+              LEFT JOIN likes l ON p.postid = l.postid
+              LEFT JOIN place pl ON p.postid = pl.postid
+              LEFT JOIN (
+                  SELECT r1.*
+                  FROM report r1
+                  INNER JOIN (
+                      SELECT postid, MAX(reportid) AS max_reportid
+                      FROM report
+                      GROUP BY postid
+                  ) r2 ON r1.postid = r2.postid AND r1.reportid = r2.max_reportid
+              ) r ON p.postid = r.postid
+              WHERE r.processYn IS NULL OR r.processYn != 'P'
+              GROUP BY p.postid, p.title, p.view, m.nickName, p.content, r.processYn
+              ORDER BY likeCount DESC, p.view DESC, commentCount DESC
+              LIMIT 3
+            """)
     List<Post> selectPostOfBest();
 
     // 게시글에서 선택한 장소 목록 매퍼

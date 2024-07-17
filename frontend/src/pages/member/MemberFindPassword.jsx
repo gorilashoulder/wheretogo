@@ -34,8 +34,10 @@ export function MemberFindPassword() {
   const { onClose, onOpen, isOpen } = useDisclosure();
   const account = useContext(LoginContext);
   const inputStyles = getInputStyles();
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleFindPassword() {
+    setIsLoading(true);
     axios
       .post("/api/member/sendEmail", { email })
       .then(() => {
@@ -52,21 +54,25 @@ export function MemberFindPassword() {
           description: "해당 이메일이 존재하지 않습니다.",
           position: "bottom",
         });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
 
   function handleCode() {
+    setIsLoading(true);
     axios
       .post("/api/member/sendCode", { email })
       .then((response) => {
-        setCode(response.data.toString()); // code를 문자열로 변환하여 저장
-        setIsCodeValid(false); // 인증 코드가 발송되면 isCodeValid를 false로 설정
+        setCode(response.data.toString());
+        setIsCodeValid(false);
         toast({
           status: "success",
           description: "인증 코드가 발송되었습니다.",
           position: "bottom",
         });
-        onOpen(); // 모달 열기는 이메일이 정상적으로 처리된 후에만 실행
+        onOpen();
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {
@@ -82,6 +88,9 @@ export function MemberFindPassword() {
             position: "bottom",
           });
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
 
@@ -134,7 +143,11 @@ export function MemberFindPassword() {
               />
             </FormControl>
           </Box>
-          <Button mt={4} onClick={handleCode}>
+          <Button
+            onClick={handleCode}
+            isLoading={isLoading}
+            loadingText="인증코드 전송 중..."
+          >
             인증코드 보내기
           </Button>
           <Modal isOpen={isOpen} onClose={onClose}>
@@ -168,7 +181,11 @@ export function MemberFindPassword() {
               </ModalBody>
               <ModalFooter>
                 {isCodeValid && (
-                  <Button onClick={handleFindPassword}>
+                  <Button
+                    onClick={handleFindPassword}
+                    isLoading={isLoading}
+                    loadingText="임시비밀번호 전송중..."
+                  >
                     임시 비밀번호 발급
                   </Button>
                 )}
